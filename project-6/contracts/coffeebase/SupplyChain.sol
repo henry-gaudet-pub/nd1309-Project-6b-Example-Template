@@ -320,7 +320,7 @@ contract SupplyChain is
         // Assign values to the 8 parameters
         itemSKU = items[_upc].sku;
         itemUPC = items[_upc].upc;
-        ownerID = items[_upc].ownerID;
+        ownerID = owner(); //items[_upc].ownerID;
         originFarmerID = items[_upc].originFarmerID;
         originFarmName = items[_upc].originFarmName;
         originFarmInformation = items[_upc].originFarmInformation;

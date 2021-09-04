@@ -1,24 +1,25 @@
 App = {
     web3Provider: null,
+    web3: null,
     contracts: {},
     emptyAddress: "0x0000000000000000000000000000000000000000",
     sku: 0,
     upc: 0,
     metamaskAccountID: "0x0000000000000000000000000000000000000000",
     ownerID: "0x0000000000000000000000000000000000000000",
-    originFarmerID: "0x018C2daBef4904ECbd7118350A0c54DbeaE3549A",
+    originFarmerID: "0x0000000000000000000000000000000000000000",
     originFarmName: null,
     originFarmInformation: null,
     originFarmLatitude: null,
     originFarmLongitude: null,
     productNotes: null,
     productPrice: 0,
-    distributorID: "0xCe5144391B4aB80668965F2Cc4f2CC102380Ef0A",
-    retailerID: "0x460c31107DD048e34971E57DA2F99f659Add4f02",
-    consumerID: "0xD37b7B8C62BE2fdDe8dAa9816483AeBDBd356088",
+    distributorID: "0x0000000000000000000000000000000000000000",
+    retailerID: "0x0000000000000000000000000000000000000000",
+    consumerID: "0x0000000000000000000000000000000000000000",
 
     init: async function () {
-        // App.readForm();
+        App.readForm();
         /// Setup access to blockchain
         return await App.initWeb3();
     },
@@ -38,21 +39,21 @@ App = {
         App.retailerID = $("#retailerID").val();
         App.consumerID = $("#consumerID").val();
 
-        console.log(
-            App.sku,
-            App.upc,
-            App.ownerID,
-            App.originFarmerID,
-            App.originFarmName,
-            App.originFarmInformation,
-            App.originFarmLatitude,
-            App.originFarmLongitude,
-            App.productNotes,
-            App.productPrice,
-            App.distributorID,
-            App.retailerID,
-            App.consumerID
-        );
+        console.log(`
+            App.sku: ${App.sku}\n
+            App.upc: ${App.upc}\n
+            App.ownerID: ${App.ownerID}\n
+            App.originFarmerID: ${App.originFarmerID}\n
+            App.originFarmName: ${App.originFarmName}\n
+            App.originFarmInformation: ${App.originFarmInformation}\n
+            App.originFarmLatitude: ${App.originFarmLatitude}\n
+            App.originFarmLongitude: ${App.originFarmLongitude}\n
+            App.productNotes: ${App.productNotes}\n
+            App.productPrice: ${App.productPrice}\n
+            App.distributorID: ${App.distributorID}\n
+            App.retailerID: ${App.retailerID}\n
+            App.consumerID: ${App.consumerID}\n
+        `);
     },
 
     initWeb3: async function () {
@@ -62,9 +63,10 @@ App = {
             try {
                 App.web3Provider = window.ethereum;
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                console.log('getMetaskID:', accounts);
                 App.metamaskAccountID = accounts[0];
                 console.log(`App.metamaskAccountID: ${App.metamaskAccountID}`);
+                web3 = new Web3(App.web3Provider);
+                web3.eth.defaultAccount = App.metamaskAccountID;
             } catch (error) {
                 if (error.code === 4001) {
                     console.log(`User rejected request: code ${error.code}`);
@@ -97,7 +99,7 @@ App = {
             App.contracts.SupplyChain = TruffleContract(SupplyChainArtifact);
             App.contracts.SupplyChain.setProvider(App.web3Provider);
 
-            App.addFarmer();
+            // App.addFarmer();
             App.fetchItemBufferOne();
             App.fetchItemBufferTwo();
             App.fetchEvents();
@@ -156,7 +158,14 @@ App = {
         var processId = parseInt($(event.target).data('id'));
 
         App.contracts.SupplyChain.deployed().then(function (instance) {
-            return instance.harvestItem(
+            console.log(`App.originFarmerID: ${App.originFarmerID}`);
+            console.log(web3.isAddress(App.originFarmerID));
+            // console.log(`App.originFarmName: ${App.originFarmName}`);
+            // console.log(`App.originFarmInformation: ${App.originFarmInformation}`);
+            // console.log(`App.originFarmLatitude: ${App.originFarmLatitude}`);
+            // console.log(`App.originFarmLongitude: ${App.originFarmLongitude}`);
+            // console.log(`App.productNotes: ${App.productNotes}`);
+            return result = instance.harvestItem(
                 App.upc,
                 App.originFarmerID,
                 App.originFarmName,
@@ -170,6 +179,7 @@ App = {
             console.log('harvestItem', result);
         }).catch(function (err) {
             console.log(`harvestItem error: ${err.message}`);
+            console.log(err);
         });
     },
 
@@ -206,7 +216,7 @@ App = {
         var processId = parseInt($(event.target).data('id'));
 
         App.contracts.SupplyChain.deployed().then(function (instance) {
-            const productPrice = web3.utils.toWei("1", "ether");
+            const productPrice = web3.toWei("1", "ether");
             console.log('productPrice', productPrice);
             return instance.sellItem(App.upc, App.productPrice, { from: App.metamaskAccountID });
         }).then(function (result) {
@@ -274,14 +284,14 @@ App = {
         });
     },
 
-    addFarmer: function() {
+    addFarmer: function () {
         App.contracts.SupplyChain.deployed().then(function (instance) {
-        //     console.log(Object.getOwnPropertyNames(instance));
-        //     console.log(instance.harvestItem);
-        //     console.log(instance.addFarmer);
-        //     console.log(instance.addFarmer.length);
-        //     console.log(instance.addFarmer.toString());
-        console.log(App.originFarmerID);
+            //     console.log(Object.getOwnPropertyNames(instance));
+            //     console.log(instance.harvestItem);
+            //     console.log(instance.addFarmer);
+            //     console.log(instance.addFarmer.length);
+            //     console.log(instance.addFarmer.toString());
+            // console.log(App.originFarmerID);
             return instance.addFarmer(App.originFarmerID);
         }).then(function (result) {
             console.log(`addFarmer result: ${result}`);
