@@ -14,7 +14,7 @@ contract('SupplyChain', function(accounts) {
     const originFarmLongitude = "144.341490"
     var productID = sku + upc
     const productNotes = "Best beans for Espresso"
-    const productPrice = web3.toWei(1, "ether")
+    const productPrice = web3.utils.toWei("1", "ether")
     var itemState = 0
     const distributorID = accounts[2]
     const retailerID = accounts[3]
@@ -44,34 +44,25 @@ contract('SupplyChain', function(accounts) {
     // 1st Test
     it("Testing smart contract function harvestItem() that allows a farmer to harvest coffee", async() => {
         const supplyChain = await SupplyChain.deployed()
-        
-        // Declare and Initialize a variable for event
-        var eventEmitted = false
-        
-        // Watch the emitted event Harvested()
-        var event = supplyChain.Harvested()
-        await event.watch((err, res) => {
-            eventEmitted = true
-        })
 
         // Mark an item as Harvested by calling function harvestItem()
-        await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let res = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes);
+        let resupc = parseInt(res.receipt.rawLogs[0].data)
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        const resultBufferOne = await supplyChain.fetchItemBufferOne.call(upc)
-        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        const resultBufferOne = await supplyChain.fetchItemBufferOne.call(resupc)
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(resupc)
 
         // Verify the result set
-        assert.equal(resultBufferOne[0], sku, 'Error: Invalid item SKU')
-        assert.equal(resultBufferOne[1], upc, 'Error: Invalid item UPC')
-        assert.equal(resultBufferOne[2], originFarmerID, 'Error: Missing or Invalid ownerID')
-        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID')
-        assert.equal(resultBufferOne[4], originFarmName, 'Error: Missing or Invalid originFarmName')
-        assert.equal(resultBufferOne[5], originFarmInformation, 'Error: Missing or Invalid originFarmInformation')
-        assert.equal(resultBufferOne[6], originFarmLatitude, 'Error: Missing or Invalid originFarmLatitude')
-        assert.equal(resultBufferOne[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
-        assert.equal(resultBufferTwo[5], 0, 'Error: Invalid item State')
-        assert.equal(eventEmitted, true, 'Invalid event emitted')        
+        assert.equal(resultBufferOne[0], sku, `Error: Invalid item SKU, expected ${sku} but was ${resultBufferOne[0]}`)
+        assert.equal(resultBufferOne[1], upc, `Error: Invalid item UPC, expected ${upc}, but was ${resultBufferOne[1]}`)
+        assert.equal(resultBufferOne[2], originFarmerID, `Error: Missing or Invalid ownerID, expected ${originFarmerID} but was ${resultBufferOne[2]}`)
+        assert.equal(resultBufferOne[3], originFarmerID, `Error: Missing or Invalid originFarmerID, expected ${originFarmerID} but was ${resultBufferOne[3]}`)
+        assert.equal(resultBufferOne[4], originFarmName, `Error: Missing or Invalid originFarmName, expected ${originFarmName} but was ${resultBufferOne[4]}`)
+        assert.equal(resultBufferOne[5], originFarmInformation, `Error: Missing or Invalid originFarmInformation, expected ${originFarmInformation} but was ${resultBufferOne[5]}`)
+        assert.equal(resultBufferOne[6], originFarmLatitude, `Error: Missing or Invalid originFarmLatitude, expected ${originFarmLatitude} but was ${resultBufferOne[6]}`)
+        assert.equal(resultBufferOne[7], originFarmLongitude, `Error: Missing or Invalid originFarmLongitude, expected ${originFarmLongitude} but was ${resultBufferOne[7]}`)
+        assert.equal(resultBufferTwo[5], 0, `Error: Invalid item State, expected 0 but was ${resultBufferTwo[5]}`)
     })    
 
     // 2nd Test
@@ -131,7 +122,7 @@ contract('SupplyChain', function(accounts) {
         
 
         // Verify the result set
-          
+        assert.equal(true, true, "4")
     })    
 
     // 5th Test
@@ -142,7 +133,7 @@ contract('SupplyChain', function(accounts) {
         
         
         // Watch the emitted event Sold()
-        var event = supplyChain.Sold()
+        // var event = supplyChain.Sold()
         
 
         // Mark an item as Sold by calling function buyItem()
@@ -152,7 +143,7 @@ contract('SupplyChain', function(accounts) {
         
 
         // Verify the result set
-        
+        assert.equal(true, true, "5")
     })    
 
     // 6th Test
@@ -172,8 +163,8 @@ contract('SupplyChain', function(accounts) {
         
 
         // Verify the result set
-              
-    })    
+        assert.equal(true, true, "6")
+    })
 
     // 7th Test
     it("Testing smart contract function receiveItem() that allows a retailer to mark coffee received", async() => {
@@ -192,6 +183,7 @@ contract('SupplyChain', function(accounts) {
         
 
         // Verify the result set
+        assert.equal(true, true, "7")
              
     })    
 
@@ -212,7 +204,7 @@ contract('SupplyChain', function(accounts) {
         
 
         // Verify the result set
-        
+        assert.equal(true, true, "8")
     })    
 
     // 9th Test
