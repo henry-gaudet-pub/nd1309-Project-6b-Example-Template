@@ -233,7 +233,7 @@ contract SupplyChain is
     // and any excess ether sent is refunded back to the buyer
     function buyItem(uint256 _upc)
         public
-        
+        payable
         // Call modifier to check if upc has passed previous supply chain stage
         forSale(_upc)
         // Call modifer to check if buyer has paid enough

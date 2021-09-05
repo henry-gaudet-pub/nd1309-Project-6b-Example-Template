@@ -64,7 +64,7 @@ App = {
                 App.web3Provider = window.ethereum;
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 App.metamaskAccountID = accounts[0];
-                console.log(`App.metamaskAccountID: ${App.metamaskAccountID}`);
+                console.log(`Using metmask account: ${App.metamaskAccountID}`);
                 web3 = new Web3(App.web3Provider);
                 web3.eth.defaultAccount = App.metamaskAccountID;
             } catch (error) {
@@ -99,11 +99,9 @@ App = {
             App.contracts.SupplyChain = TruffleContract(SupplyChainArtifact);
             App.contracts.SupplyChain.setProvider(App.web3Provider);
 
-            // App.addFarmer();
             App.fetchItemBufferOne();
             App.fetchItemBufferTwo();
             App.fetchEvents();
-
         });
 
         return App.bindEvents();
@@ -150,123 +148,191 @@ App = {
             case 10:
                 return await App.fetchItemBufferTwo(event);
                 break;
+            case 11:
+                return await App.addFarmer(event);
+                break;
+            case 12:
+                return await App.addDistributor(event);
+                break;
+            case 13:
+                return await App.addRetailer(event);
+                break;
+            case 14:
+                return await App.addConsumer(event);
+                break;
         }
     },
 
     harvestItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
-            console.log(`App.originFarmerID: ${App.originFarmerID}`);
-            console.log(web3.isAddress(App.originFarmerID));
-            // console.log(`App.originFarmName: ${App.originFarmName}`);
-            // console.log(`App.originFarmInformation: ${App.originFarmInformation}`);
-            // console.log(`App.originFarmLatitude: ${App.originFarmLatitude}`);
-            // console.log(`App.originFarmLongitude: ${App.originFarmLongitude}`);
-            // console.log(`App.productNotes: ${App.productNotes}`);
-            return result = instance.harvestItem(
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
+            return instance.harvestItem(
                 App.upc,
-                App.originFarmerID,
+                App.metamaskAccountID,
                 App.originFarmName,
                 App.originFarmInformation,
                 App.originFarmLatitude,
                 App.originFarmLongitude,
-                App.productNotes
+                App.productNotes,
+                { from: App.metamaskAccountID }
             );
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('harvestItem', result);
+            $("#farmerErrorText").text("");
         }).catch(function (err) {
             console.log(`harvestItem error: ${err.message}`);
-            console.log(err);
+            $("#farmerErrorText").text("The transaction was not processed. Only farmers can Harvest, Process, Pack, or Sell items. Are you a farmer?");
+            setInterval(function() {
+                $("#farmerErrorText").text("");
+            }, 10000);
         });
     },
 
     processItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
             return instance.processItem(App.upc, { from: App.metamaskAccountID });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('processItem', result);
+            $("#farmerErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`processItem error: ${err.message}`);
+            $("#farmerErrorText").text("The transaction was not processed. Only farmers can Harvest, Process, Pack, or Sell items. Are you a farmer?");
+            setInterval(function() {
+                $("#farmerErrorText").text("");
+            }, 10000);
         });
     },
 
     packItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
             return instance.packItem(App.upc, { from: App.metamaskAccountID });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('packItem', result);
+            $("#farmerErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`packItem error: ${err.message}`);
+            $("#farmerErrorText").text("The transaction was not processed. Only farmers can Harvest, Process, Pack, or Sell items. Are you a farmer?");
+            setInterval(function() {
+                $("#farmerErrorText").text("");
+            }, 10000);
         });
     },
 
     sellItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
             const productPrice = web3.toWei("1", "ether");
             console.log('productPrice', productPrice);
             return instance.sellItem(App.upc, App.productPrice, { from: App.metamaskAccountID });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('sellItem', result);
+            $("#farmerErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`sellItem error: ${err.message}`);
+            $("#farmerErrorText").text("The transaction was not processed. Only farmers can Harvest, Process, Pack, or Sell items. Are you a farmer?");
+            setInterval(function() {
+                $("#farmerErrorText").text("");
+            }, 10000);
         });
     },
 
     buyItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
-            const walletValue = web3.toWei(3, "ether");
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
+            const walletValue = web3.toWei("3", "ether");
             return instance.buyItem(App.upc, { from: App.metamaskAccountID, value: walletValue });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('buyItem', result);
+            $("#productErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`buyItem error: ${err.message}`);
+            $("#productErrorText").text("The transaction was not processed. Only distributors can Buy and Ship items. Are you a distributor?");
+            setInterval(function() {
+                $("#productErrorText").text("");
+            }, 10000);
         });
     },
 
     shipItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
             return instance.shipItem(App.upc, { from: App.metamaskAccountID });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('shipItem', result);
+            $("#productErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`shipItem error: ${err.message}`);
+            $("#productErrorText").text("The transaction was not processed. Only distributors can Buy and Ship items. Are you a distributor?");
+            setInterval(function() {
+                $("#productErrorText").text("");
+            }, 10000);
         });
     },
 
     receiveItem: function (event) {
         event.preventDefault();
-        var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
             return instance.receiveItem(App.upc, { from: App.metamaskAccountID });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('receiveItem', result);
+            $("#productErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`receiveItem error: ${err.message}`);
+            $("#productErrorText").text("The transaction was not processed. Only retailers can Receive items. Are you a retailer?");
+            setInterval(function() {
+                $("#productErrorText").text("");
+            }, 10000);
         });
     },
 
@@ -274,29 +340,95 @@ App = {
         event.preventDefault();
         var processId = parseInt($(event.target).data('id'));
 
-        App.contracts.SupplyChain.deployed().then(function (instance) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
             return instance.purchaseItem(App.upc, { from: App.metamaskAccountID });
         }).then(function (result) {
             $("#ftc-item").text(result);
             console.log('purchaseItem', result);
+            $("#productErrorText").text("");
         }).catch(function (err) {
-            console.log(err.message);
+            console.log(`purchaseItem error: ${err.message}`);
+            $("#productErrorText").text("The transaction was not processed. Only consumers can Purchase items. Are you a consumer?");
+            setInterval(function() {
+                $("#productErrorText").text("");
+            }, 10000);
         });
     },
 
-    addFarmer: function () {
-        App.contracts.SupplyChain.deployed().then(function (instance) {
-            //     console.log(Object.getOwnPropertyNames(instance));
-            //     console.log(instance.harvestItem);
-            //     console.log(instance.addFarmer);
-            //     console.log(instance.addFarmer.length);
-            //     console.log(instance.addFarmer.toString());
-            // console.log(App.originFarmerID);
-            return instance.addFarmer(App.originFarmerID);
+    addFarmer: function (event) {
+        event.preventDefault();
+
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
+            console.log(`adding farmer ${App.metamaskAccountID}`)
+            return instance.addFarmer(App.metamaskAccountID);
         }).then(function (result) {
-            console.log(`addFarmer result: ${result}`);
+            console.log(`addFarmer result: ${Object.getOwnPropertyNames(result)}`);
         }).catch(function (error) {
             console.log(`addFarmer error: ${error.message}`);
+        });
+    },
+    
+    addDistributor: function(event) {
+        event.preventDefault();
+
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
+            console.log(`adding distributor ${App.metamaskAccountID}`)
+            return instance.addDistributor(App.metamaskAccountID);
+        }).then(function (result) {
+            console.log(`addDistributor result: ${Object.getOwnPropertyNames(result)}`);
+        }).catch(function (error) {
+            console.log(`addDistributor error: ${error.message}`);
+        });
+    },
+    
+    addRetailer: function(event) {
+        event.preventDefault();
+
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
+            console.log(`adding retailer ${App.metamaskAccountID}`)
+            return instance.addRetailer(App.metamaskAccountID);
+        }).then(function (result) {
+            console.log(`addRetailer result: ${Object.getOwnPropertyNames(result)}`);
+        }).catch(function (error) {
+            console.log(`addRetailer error: ${error.message}`);
+        });
+    },
+    
+    addConsumer: function(event) {
+        event.preventDefault();
+
+        window.ethereum.request({ method: 'eth_requestAccounts' }
+        ).then((accounts) => {
+            App.metamaskAccountID = accounts[0];
+            web3.eth.defaultAccount = App.metamaskAccountID;
+            return App.contracts.SupplyChain.deployed()
+        }).then(function (instance) {
+            console.log(`adding consumer ${App.metamaskAccountID}`)
+            return instance.addConsumer(App.metamaskAccountID);
+        }).then(function (result) {
+            console.log(`addConsumer result: ${Object.getOwnPropertyNames(result)}`);
+        }).catch(function (error) {
+            console.log(`addConsumer error: ${error.message}`);
         });
     },
 

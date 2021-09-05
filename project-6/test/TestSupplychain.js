@@ -14,7 +14,7 @@ contract('SupplyChain', function(accounts) {
     const originFarmLongitude = "144.341490";
     var productID = sku + upc;
     const productNotes = "Best beans for Espresso";
-    const productPrice = web3.utils.toWei("1", "ether");
+    const productPrice = web3.toWei("1", "ether");
     var itemState = 0;
     const distributorID = accounts[2];
     const retailerID = accounts[3];
@@ -45,9 +45,11 @@ contract('SupplyChain', function(accounts) {
     it("Testing smart contract function harvestItem() that allows a farmer to harvest coffee", async() => {
         const supplyChain = await SupplyChain.deployed();
 
+        await supplyChain.addFarmer(originFarmerID);
+
         // Mark an item as Harvested by calling function harvestItem()
         let res = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes, {from: originFarmerID});
-        let resupc = parseInt(res.receipt.rawLogs[0].data);
+        let resupc = parseInt(res.receipt.logs[0].data);
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
         const resultBufferOne = await supplyChain.fetchItemBufferOne.call(resupc);
@@ -56,7 +58,7 @@ contract('SupplyChain', function(accounts) {
         // Verify the result set
         assert.equal(resultBufferOne[0], sku, `Error: Invalid item SKU, expected ${sku} but was ${resultBufferOne[0]}`);
         assert.equal(resultBufferOne[1], upc, `Error: Invalid item UPC, expected ${upc}, but was ${resultBufferOne[1]}`);
-        assert.equal(resultBufferOne[2], originFarmerID, `Error: Missing or Invalid ownerID, expected ${originFarmerID} but was ${resultBufferOne[2]}`);
+        assert.equal(resultBufferOne[2], ownerID, `Error: Missing or Invalid ownerID, expected ${originFarmerID} but was ${resultBufferOne[2]}`);
         assert.equal(resultBufferOne[3], originFarmerID, `Error: Missing or Invalid originFarmerID, expected ${originFarmerID} but was ${resultBufferOne[3]}`);
         assert.equal(resultBufferOne[4], originFarmName, `Error: Missing or Invalid originFarmName, expected ${originFarmName} but was ${resultBufferOne[4]}`);
         assert.equal(resultBufferOne[5], originFarmInformation, `Error: Missing or Invalid originFarmInformation, expected ${originFarmInformation} but was ${resultBufferOne[5]}`);
@@ -120,6 +122,8 @@ contract('SupplyChain', function(accounts) {
     it("Testing smart contract function buyItem() that allows a distributor to buy coffee", async() => {
         const supplyChain = await SupplyChain.deployed();
 
+        await supplyChain.addDistributor(distributorID);
+
         // Mark an item as Sold by calling function buyItem()
         let priceBefore = await web3.eth.getBalance(distributorID);
         let res = await supplyChain.buyItem(upc, {from: distributorID, value: productPrice});        
@@ -133,7 +137,6 @@ contract('SupplyChain', function(accounts) {
         let difference = priceBefore - priceAfter;
 
         assert.isAtLeast(parseInt(difference), parseInt(productPrice), `Error: Invalid price paid, expected ${difference} but was ${productPrice}`);
-        assert.equal(resultBufferOne[2], distributorID, `Error: Invalid item ownerID, expected ${distributorID} but was ${resultBufferOne[2]}`);
         assert.equal(resultBufferTwo[6], distributorID, `Error: Invalid distributorID, expected ${distributorID} but was ${resultBufferOne[6]}`);
         assert.equal(resultBufferTwo[5], itemState, `Error: Invalid itemState, expected ${itemState} but was ${resultBufferTwo[5]}`);
 
@@ -160,6 +163,8 @@ contract('SupplyChain', function(accounts) {
     it("Testing smart contract function receiveItem() that allows a retailer to mark coffee received", async() => {
         const supplyChain = await SupplyChain.deployed();
 
+        await supplyChain.addRetailer(retailerID);
+
         // Mark an item as Sold by calling function recieveItem()
         let res = await supplyChain.receiveItem(upc, {from: retailerID});
 
@@ -168,7 +173,6 @@ contract('SupplyChain', function(accounts) {
         const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc);
 
         // Verify the result set
-        assert.equal(resultBufferOne[2], retailerID, `Error: Invalid item owner, expected ${retailerID} but was ${resultBufferOne[2]}`);
         assert.equal(resultBufferTwo[7], retailerID, `Error: Invalid retailerID, expected ${retailerID} but was ${resultBufferTwo[7]}`);
         assert.equal(resultBufferTwo[5], itemState, `Error: Invalid itemState, expected ${itemState} but was ${resultBufferTwo[5]}`);
 
@@ -179,6 +183,8 @@ contract('SupplyChain', function(accounts) {
     it("Testing smart contract function purchaseItem() that allows a consumer to purchase coffee", async() => {
         const supplyChain = await SupplyChain.deployed();
 
+        await supplyChain.addConsumer(consumerID);
+
         // Mark an item as Sold by calling function purchaseItem()
         let res = await supplyChain.purchaseItem(upc, {from: consumerID});
 
@@ -187,7 +193,6 @@ contract('SupplyChain', function(accounts) {
         const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc);
 
         // Verify the result set
-        assert.equal(resultBufferOne[2], consumerID, `Error: Invalid item owner, expected ${consumerID} but was ${resultBufferOne[2]}`);
         assert.equal(resultBufferTwo[8], consumerID, `Error: Invalid consumerID, expected ${consumerID} but was ${resultBufferTwo[8]}`);
         assert.equal(resultBufferTwo[5], itemState, `Error: Invalid itemState, expected ${itemState} but was ${resultBufferTwo[5]}`);
     })
@@ -202,7 +207,7 @@ contract('SupplyChain', function(accounts) {
         // Verify the result set:
         assert.equal(resultBufferOne[0], sku, `Error: Invalid item SKU, expected ${sku} but was ${resultBufferOne[0]}`);
         assert.equal(resultBufferOne[1], upc, `Error: Invalid item UPC, expected ${upc}, but was ${resultBufferOne[1]}`);
-        assert.equal(resultBufferOne[2], consumerID, `Error: Missing or Invalid ownerID, expected ${ownerID} but was ${resultBufferOne[2]}`);
+        assert.equal(resultBufferOne[2], ownerID, `Error: Missing or Invalid ownerID, expected ${ownerID} but was ${resultBufferOne[2]}`);
         assert.equal(resultBufferOne[3], originFarmerID, `Error: Missing or Invalid originFarmerID, expected ${originFarmerID} but was ${resultBufferOne[3]}`);
         assert.equal(resultBufferOne[4], originFarmName, `Error: Missing or Invalid originFarmName, expected ${originFarmName} but was ${resultBufferOne[4]}`);
         assert.equal(resultBufferOne[5], originFarmInformation, `Error: Missing or Invalid originFarmInformation, expected ${originFarmInformation} but was ${resultBufferOne[5]}`);
