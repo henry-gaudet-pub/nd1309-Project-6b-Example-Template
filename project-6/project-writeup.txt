@@ -1,8 +1,6 @@
-A project write-up (.txt, .doc, or .md) that includes:
-
 The contract address
 0xdc5dba988fb371f493daa54e895f0dc7c0f69b93 (See deployment.txt)
-Program version numbers (This information will help your reviewer troubleshoot your project if any issues arise):
+
 node version number
 v12.22.6
 
@@ -12,11 +10,3 @@ Solidity v0.4.24 (solc-js)
 
 web3 version number
 0.20.6
-Your project files
-
-UML documents:
-
-Activity
-Sequence
-State
-Class (Data Model)
