@@ -43,6 +43,7 @@ contract('SupplyChain', function(accounts) {
 
     // 1st Test
     it("Testing smart contract function harvestItem() that allows a farmer to harvest coffee", async() => {
+        console.log(web3.version.api)
         const supplyChain = await SupplyChain.deployed();
 
         await supplyChain.addFarmer(originFarmerID);
